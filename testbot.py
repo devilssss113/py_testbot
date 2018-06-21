@@ -49,10 +49,9 @@ def handle_document_audio(message):
 # Выдаём Read-only за определённые фразы
 @bot.message_handler(func=lambda message: message.text is not None and message.chat.id == config.GROUP_ID)
 def set_ro(message):
-
-    if any(regex.match(message.text) for regex in config.regexes):
+    if any(regex.findall(message.text) for regex in config.regexes):
         bot.send_message(message.chat.id, "Bad boy",reply_to_message_id=message.message_id)
-        bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time()+35)
+        # bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time()+35)
 #     @bot.message_handler(func=lambda message: message.document.mime_type == 'text/plain', content_types=['document'])
 #     def handle_text_doc(message):
 
