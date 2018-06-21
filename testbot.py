@@ -4,6 +4,7 @@ import telebot
 import time
 from telebot import types
 import emoji
+import regexp
 
 bot = telebot.TeleBot(config.token)
 
@@ -46,10 +47,12 @@ def handle_document_audio(message):
 
 
 # Выдаём Read-only за определённые фразы
-@bot.message_handler(func=lambda message: message.text and message.text.lower() in config.restricted_messages and message.chat.id == config.GROUP_ID)
-def set_ro(message):
-    bot.send_message(message.chat.id, "Bad boy",reply_to_message_id=message.message_id)
-    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time()+35)
+# @bot.message_handler(func=lambda message: message.text and message.text.lower() in config.restricted_messages and message.chat.id == config.GROUP_ID)
+# def set_ro(message):
+#     @bot.message_handler(func=lambda message: message.document.mime_type == 'text/plain', content_types=['document'])
+#     def handle_text_doc(message):
+#     bot.send_message(message.chat.id, "Bad boy",reply_to_message_id=message.message_id)
+#     bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time()+35)
 
 
 bot.polling(none_stop=True, interval=0)
