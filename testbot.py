@@ -11,7 +11,6 @@ from mwt import MWT
 
 bot = telebot.TeleBot(config.token)
 
-
 # @bot.message_handler(func=lambda message: message.entities is not None)
 # def delete_links(message):
 #     for entity in message.entities:  # Пройдёмся по всем entities в поисках ссылок
@@ -61,6 +60,11 @@ def get_admin_ids(bot, chat_id):
 # Выдаём Read-only за определённые фразы
 @bot.message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
 def set_ro(message):
+    jailbot = bot.get_me()
+    jailbot_id = jailbot.id
+    # if (message.reply_to_message is not None):
+    #         bot.send_message(chat_id=-1001223980001,text=message.reply_to_message)
+
     current_user_id = message.from_user.id
     current_group_id = message.chat.id
     current_group_admins = get_admin_ids(bot, current_group_id)
@@ -95,14 +99,27 @@ def set_ro(message):
             bot.send_message(message.chat.id, text=response, reply_to_message_id=message.message_id)
         else:
             bot.send_message(message.chat.id, text='Выше моего понимания!', reply_to_message_id=message.message_id)
+    elif (message.reply_to_message is not None):
+        if (str(message.reply_to_message.from_user.id) == str(jailbot_id)):
+            request = apiai.ApiAI(config.apiai_token).text_request()  # Токен API к Dialogflow
+            request.lang = 'ru'  # На каком языке будет послан запрос
+            request.session_id = 'Jailbot'  # ID Сессии диалога (нужно, чтобы потом учить бота)
+            request.query = message.text
+            responseJson = json.loads(request.getresponse().read().decode('utf-8'))
+            response = responseJson['result']['fulfillment']['speech']  # Разбираем JSON и вытаскиваем ответ
+            # Если есть ответ от бота - присылаем юзеру, если нет - бот его не понял
+            if response:
+                bot.send_message(message.chat.id, text=response, reply_to_message_id=message.message_id)
+            else:
+                bot.send_message(message.chat.id, text='Выше моего понимания!', reply_to_message_id=message.message_id)
 
 @bot.edited_message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
 def set_ro_by_command(message):
     current_user_id = message.from_user.id
     current_group_id = message.chat.id
     current_group_admins = get_admin_ids(bot, current_group_id)
+    random_ban_message = lambda: random.choice(config.ban_message)
     bot.send_message(message.chat.id, "got it", reply_to_message_id=message.message.id)
-
     if any(regex.findall(message.text) for regex in config.attack_commands):
         bot.send_message(message.chat.id, "Check it", reply_to_message_id=message.message.id)
         if (current_user_id in current_group_admins):
@@ -112,5 +129,12 @@ def set_ro_by_command(message):
         else:
             bot.send_message(message.chat.id, random_ban_message(), reply_to_message_id=message.message_id)
             bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
+
+@bot.message_handler(func=lambda message: message.reply_to_message is not None and message.chat.id in config.GROUP_ID)
+def set_ro(message):
+    bot.send_message(message.chat.id, text="CATCHED")
+
+
+
 
 bot.polling(none_stop=True, interval=0)
