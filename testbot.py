@@ -4,6 +4,8 @@ import telebot
 import time
 from telebot import types
 import emoji
+import random
+import apiai, json
 import re
 
 bot = telebot.TeleBot(config.token)
@@ -50,11 +52,34 @@ def handle_document_audio(message):
 @bot.message_handler(func=lambda message: message.text is not None and message.chat.id == config.GROUP_ID)
 def set_ro(message):
     if any(regex.findall(message.text) for regex in config.regexes):
-        bot.send_message(message.chat.id, "Bad boy",reply_to_message_id=message.message_id)
-        bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time()+35)
+        random_ban_message = lambda: random.choice(config.ban_message)
+        bot.send_message(message.chat.id, random_ban_message(),reply_to_message_id=message.message_id)
+    elif any(regex.findall(message.text) for regex in config.regexes_botname):
+        messageWithoutBot = re.sub(config.regex_botname, repl='', string=message.text)
+        request = apiai.ApiAI('9c9e550ee9194530812ae11fb0a22258').text_request()  # Токен API к Dialogflow
+        request.lang = 'ru'  # На каком языке будет послан запрос
+        request.session_id = 'Jailbot'  # ID Сессии диалога (нужно, чтобы потом учить бота)
+        request.query = messageWithoutBot
+        responseJson = json.loads(request.getresponse().read().decode('utf-8'))
+        response = responseJson['result']['fulfillment']['speech']  # Разбираем JSON и вытаскиваем ответ
+        # Если есть ответ от бота - присылаем юзеру, если нет - бот его не понял
+        if response:
+            bot.send_message(message.chat.id, text=response, reply_to_message_id=message.message_id)
+        else:
+            bot.send_message(message.chat_id, text='Я Вас не совсем понял!')
+
+        # bot.send_message(message.chat.id, "Не упоминай мое имя, человек", reply_to_message_id=message.message_id)
+
+        # bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time()+31)
 #     @bot.message_handler(func=lambda message: message.document.mime_type == 'text/plain', content_types=['document'])
 #     def handle_text_doc(message):
 
+# отвечаем на хуйню
+# @bot.message_handler(func=lambda message: message.text is not None and message.chat.id == config.GROUP_ID)
+# def set_ro(message):
+#     if any(regex.findall(message.text) for regex in config.regexes):
+#
+#         random_ban_message = lambda: random.choice(config.ban_message)
 
 bot.polling(none_stop=True, interval=0)
 # @bot.message_handler(func=lambda message: message.text and message.text.lower() in config.restricted_messages and message.chat.id == config.GROUP_ID)
