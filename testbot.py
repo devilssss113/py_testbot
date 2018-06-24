@@ -111,7 +111,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url="https://jailbot20.herokuapp.com/" + config.token)
+    bot.set_webhook(url="//jailbot20.herokuapp.com/" + config.token)
     return "!", 200
 
 
