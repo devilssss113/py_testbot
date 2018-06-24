@@ -17,10 +17,10 @@ bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
 
 
-
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
+    bot.send_message(message.chat.id, 'Я здесь')
     pass
 
 
