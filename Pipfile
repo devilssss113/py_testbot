@@ -4,11 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+Flask = "==1.0.2" 
 apiai = "==1.2.3"
 certifi = "==2018.4.16"
 chardet = "==3.0.4"
 click = "==6.7"
-emoji = "==0.5.0"
 first = "==2.0.1"
 idna = "==2.7"
 mwt = "==0.9.2"
