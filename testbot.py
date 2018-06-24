@@ -11,12 +11,12 @@ from aiohttp import web
 from mwt import MWT
 import telebot
 
-WEBHOOK_HOST = '<ip/host where the bot is running>'
+WEBHOOK_HOST = ("https://jailbot20.herokuapp.com/" + config.token)
 WEBHOOK_PORT = 8443  # 443, 80, 88 or 8443 (port need to be 'open')
 WEBHOOK_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP addr
-
-WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Path to the ssl certificate
-WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Path to the ssl private key
+#
+# WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Path to the ssl certificate
+# WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Path to the ssl private key
 
 # Quick'n'dirty SSL certificate generation:
 #
