@@ -102,7 +102,7 @@ def set_ro_by_command(message):
             bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
 
 
-@server.route(config.token, methods=['POST'])
+@server.route('/' + config.token, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
@@ -111,7 +111,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url="//jailbot20.herokuapp.com/" + config.token)
+    bot.set_webhook(url='https://jailbot20.herokuapp.com/' + config.token)
     return "!", 200
 
 
