@@ -31,13 +31,13 @@ def handle_start_help(message):
 
 
 # Обработчик новых людей в чате.
-@bot.message_handler(content_types=['new_chat_members'])
+@bot.message_handler(func=lambda m: True, content_types=['new_chat_member'])
 def handle_welcome(message):
     bot.send_message(message.chat.id, text='Приветствую в нашем чате, ' + message.message.from_user.username + '!', reply_to_message_id=message.message_id)
 
 
 # Обработчик ушедших людей в чате.
-@bot.message_handler(content_types=['left_chat_member'])
+@bot.message_handler(func=lambda m: True, content_types=['left_chat_member'])
 def handle_bye(message):
     bot.send_message(message.chat.id, text='Нам будет тебя не хватать, ' + message.message.from_user.username + '!')
 
