@@ -8,6 +8,7 @@ import logging
 from mwt import MWT
 import telebot
 import os
+import datetime
 from flask import Flask, request
 
 logger = telebot.logger
@@ -29,6 +30,41 @@ def get_admin_ids(bot, chat_id):
     """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
 
+
+def user_mute(message, victim_id):
+    rand_min = 31;
+    rand_max = 600;
+    random.seed(version=2)
+    winner_value = 0
+    start_date = datetime.datetime.now()
+
+    ban_value = random.randrange(int(rand_min), int(rand_max), 1)
+    if ban_value > rand_max / 2:
+        #('ban is more randMax/2')
+        if random.randrange(1, 100, 1) < 60:
+            #('ban is set to half')
+            ban_value = random.randrange(int(rand_min), int(rand_max / 2), 1)
+
+    if ban_value > rand_max / 3:
+        #('ban is more randMax/3')
+        if random.randrange(1, 100, 1) < 60:
+            #('ban is set to 1/3')
+            ban_value = random.randrange(int(rand_min), int(rand_max / 3), 1)
+
+    message_to_victim = ('Ты выиграл(а) ' + str(ban_value) + "секунд мута!!!")
+    bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
+    bot.restrict_chat_member(message.chat.id, victim_id, until_date=datetime.datetime.now() + ban_value)
+
+    if datetime.datetime.now().day > start_date.day:
+        winner_value = 0
+        if int(ban_value) > winner_value:
+            winner_value = ban_value;
+            bot.send_message(message.chat.id,text=('Сегодняшний рекорд равен: ' + str(winner_value)))
+            start_date = datetime.datetime.now()
+    elif datetime.datetime.now().day == start_date.day:
+        if int(ban_value) > winner_value:
+            winner_value = ban_value;
+            bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
 
 # Выдаём Read-only за определённые фразы
 @bot.message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
@@ -52,8 +88,9 @@ def set_ro(message):
         if (current_user_id in current_group_admins and message.reply_to_message is not None):
             victim_id = message.reply_to_message.from_user.id
             random_ban_message_on_command = lambda: random.choice(config.ban_message_on_command)
-            bot.send_message(message.chat.id, random_ban_message_on_command(), reply_to_message_id=message.reply_to_message.message_id)
-            bot.restrict_chat_member(message.chat.id, victim_id, until_date=time.time() + 31)
+            # bot.send_message(message.chat.id, random_ban_message_on_command(), reply_to_message_id=message.reply_to_message.message_id)
+            user_mute(message, victim_id) #bot.restrict_chat_member(message.chat.id, victim_id, until_date=time.time() + 31)
+
         else:
             bot.send_message(message.chat.id, 'Нет.', reply_to_message_id=message.message_id)
             bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
@@ -98,8 +135,9 @@ def set_ro_by_command(message):
             random_ban_message_on_command = lambda: random.choice(config.ban_message_on_command)
             bot.send_message(message.chat.id, random_ban_message_on_command(), reply_to_message_id=message.reply_to_message)
         else:
-            bot.send_message(message.chat.id, random_ban_message(), reply_to_message_id=message.message_id)
-            bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
+            user_mute(message, message.from_user.id)
+            # bot.send_message(message.chat.id, random_ban_message(), reply_to_message_id=message.message_id)
+            # bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
 
 
 @server.route('/' + config.token, methods=['POST'])
