@@ -18,6 +18,12 @@ bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
 
 
+@MWT(timeout=10*60)
+def get_admin_ids(bot, chat_id):
+    """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
+    return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
+
+
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
@@ -25,10 +31,16 @@ def handle_start_help(message):
     pass
 
 
-@MWT(timeout=10*60)
-def get_admin_ids(bot, chat_id):
-    """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
-    return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
+# Обработчик новых людей в чате.
+@bot.message_handler(func=lambda message: True, content_types=['new_chat_member'])
+def handle_welcome(message):
+    bot.send_message(message.chat.id, text='Приветствую в нашем чате, ' + message.message.from_user.username + '!', reply_to_message_id=message.message_id)
+
+
+# Обработчик ушедших людей в чате.
+@bot.message_handler(func=lambda message: True, content_types=['left_chat_member'])
+def handle_bye(message):
+    bot.send_message(message.chat.id, text='Нам будет тебя не хватать, ' + message.message.from_user.username + '!')
 
 
 def user_mute(message, victim_id):
