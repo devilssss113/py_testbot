@@ -43,7 +43,7 @@ def handle_bye(message):
     bot.send_message(message.chat.id, text='Нам будет тебя не хватать, ' + message.message.from_user.username + '!')
 
 
-def user_mute(message, victim_id):
+def user_mute(message, id):
     rand_min = 31;
     rand_max = 600;
     random.seed(version=2)
@@ -65,7 +65,7 @@ def user_mute(message, victim_id):
 
     message_to_victim = ('Ты выиграл(а) ' + str(ban_value) + "секунд мута!!!")
     bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
-    bot.restrict_chat_member(message.chat.id, victim_id, until_date=datetime.datetime.now() + ban_value)
+    bot.restrict_chat_member(message.chat.id, user_id=id, until_date=datetime.datetime.now() + ban_value)
 
     if datetime.datetime.now().day > start_date.day:
         winner_value = 0
