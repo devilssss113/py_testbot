@@ -94,8 +94,9 @@ def set_ro(message):
         if (current_user_id in current_group_admins):
             bot.send_message(message.chat.id, random_ban_admin_message(), reply_to_message_id=message.message_id)
         else:
-            bot.send_message(message.chat.id, random_ban_message(),reply_to_message_id=message.message_id)
-            bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
+            user_mute(message, message.from_user.id)
+            #bot.send_message(message.chat.id, random_ban_message(),reply_to_message_id=message.message_id)
+            #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
     elif any(regex.match(message.text) for regex in config.attack_commands):
         if (current_user_id in current_group_admins and message.reply_to_message is not None):
             victim_id = message.reply_to_message.from_user.id
