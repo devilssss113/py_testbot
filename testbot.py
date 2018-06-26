@@ -64,8 +64,9 @@ def user_mute(message, id):
             ban_value = random.randrange(int(rand_min), int(rand_max / 3), 1)
 
     message_to_victim = ('Ты выиграл(а) ' + str(ban_value) + "секунд мута!!!")
+    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=datetime.datetime.now() + ban_value)
     bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
-    bot.restrict_chat_member(message.chat.id, user_id=id, until_date=datetime.datetime.now() + ban_value)
+
 
     if datetime.datetime.now().day > start_date.day:
         winner_value = 0
@@ -94,7 +95,7 @@ def set_ro(message):
         if (current_user_id in current_group_admins):
             bot.send_message(message.chat.id, random_ban_admin_message(), reply_to_message_id=message.message_id)
         else:
-            user_mute(message, message.from_user.id)
+            user_mute(message)
             #bot.send_message(message.chat.id, random_ban_message(),reply_to_message_id=message.message_id)
             #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
     elif any(regex.match(message.text) for regex in config.attack_commands):
