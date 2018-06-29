@@ -38,7 +38,7 @@ def user_mute(message):
             ban_value = random.randrange(int(config.rand_min), int(config.rand_max / 3), 1)
 
     message_to_victim = (config.random_ban_message() + 'Ты выиграл(а) ' + str(ban_value) + " секунд мута!")
-    #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
+    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
     bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
 
     if message.from_user.username is None:
