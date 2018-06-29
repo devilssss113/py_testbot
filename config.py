@@ -4,7 +4,7 @@ import re
 import random
 
 bot_version = "2.2.0"
-deploy = 0
+deploy = 1
 
 token_deploy = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
 token_test = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
