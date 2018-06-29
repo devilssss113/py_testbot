@@ -17,7 +17,7 @@ bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
 
 
-deploy = 0
+deploy = 1
 
 
 
