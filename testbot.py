@@ -5,7 +5,6 @@ import random
 import apiai, json
 import re
 import logging
-from mwt import MWT
 import telebot
 import os
 import datetime
@@ -16,12 +15,75 @@ telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
+start_date = datetime.datetime.now()
 
 
-@MWT(timeout=10*60)
 def get_admin_ids(bot, chat_id):
-    """Returns a list of admin IDs for a given chat. Results are cached for 1 hour."""
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
+
+
+
+def user_mute(message):
+
+    random.seed(version=2)
+    winner_value = 0
+    global start_date
+
+    ban_value = random.randrange(int(config.rand_min), int(config.rand_max), 1)
+    if ban_value > config.rand_max / 2:
+        if random.randrange(1, 100, 1) < 60:
+            ban_value = random.randrange(int(config.rand_min), int(config.rand_max / 2), 1)
+
+    if ban_value > config.rand_max / 3:
+        if random.randrange(1, 100, 1) < 60:
+            ban_value = random.randrange(int(config.rand_min), int(config.rand_max / 3), 1)
+
+    message_to_victim = (config.random_ban_message() + 'Ты выиграл(а) ' + str(ban_value) + " секунд мута!")
+    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
+    bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
+
+    if datetime.datetime.now().day > start_date.day:
+        winner_value = 0
+        if int(ban_value) > winner_value:
+            winner_value = ban_value
+            bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
+            start_date = datetime.datetime.now()
+    elif datetime.datetime.now().day == start_date.day:
+        if int(ban_value) > winner_value:
+            winner_value = ban_value;
+            bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
+
+
+def bot_ai_answer(message, reply):
+        if reply==1:
+            message_to_ai = message.text
+        elif reply==0:
+            message_to_ai = re.sub(config.regex_botname, repl='', string=message.text)
+
+        request = apiai.ApiAI(config.apiai_token).text_request()  # Токен API к Dialogflow
+        request.lang = 'ru'  # На каком языке будет послан запрос
+        request.session_id = 'Jailbot'  # ID Сессии диалога (нужно, чтобы потом учить бота)
+        request.query = message_to_ai
+        responseJson = json.loads(request.getresponse().read().decode('utf-8'))
+        response = responseJson['result']['fulfillment']['speech']  # Разбираем JSON и вытаскиваем ответ
+        # Если есть ответ от бота - присылаем юзеру, если нет - бот его не понял
+        if response:
+            bot.send_message(message.chat.id, text=response, reply_to_message_id=message.message_id)
+        else:
+            bot.send_message(message.chat.id, text='Не хочу говорить об этом', reply_to_message_id=message.message_id)
+
+
+#   .----------------.  .----------------.  .-----------------. .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
+#  | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
+#  | |  ____  ____  | || |      __      | || | ____  _____  | || |  ________    | || |   _____      | || |  _________   | || |  _______     | || |    _______   | |
+#  | | |_   ||   _| | || |     /  \     | || ||_   \|_   _| | || | |_   ___ `.  | || |  |_   _|     | || | |_   ___  |  | || | |_   __ \    | || |   /  ___  |  | |
+#  | |   | |__| |   | || |    / /\ \    | || |  |   \ | |   | || |   | |   `. \ | || |    | |       | || |   | |_  \_|  | || |   | |__) |   | || |  |  (__ \_|  | |
+#  | |   |  __  |   | || |   / ____ \   | || |  | |\ \| |   | || |   | |    | | | || |    | |   _   | || |   |  _|  _   | || |   |  __ /    | || |   '.___`-.   | |
+#  | |  _| |  | |_  | || | _/ /    \ \_ | || | _| |_\   |_  | || |  _| |___.' / | || |   _| |__/ |  | || |  _| |___/ |  | || |  _| |  \ \_  | || |  |`\____) |  | |
+#  | | |____||____| | || ||____|  |____|| || ||_____|\____| | || | |________.'  | || |  |________|  | || | |_________|  | || | |____| |___| | || |  |_______.'  | |
+#  | |              | || |              | || |              | || |              | || |              | || |              | || |              | || |              | |
+#  | '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
+#   '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
 
 
 # Обработчик команд '/start' и '/help'.
@@ -43,127 +105,77 @@ def handle_bye(message):
     bot.send_message(message.chat.id, text='Нам будет тебя не хватать, ' + message.message.from_user.username + '!')
 
 
-def user_mute(message):
-    rand_min = 31;
-    rand_max = 600;
-    random.seed(version=2)
-    winner_value = 0
-    start_date = datetime.datetime.now()
-
-    ban_value = random.randrange(int(rand_min), int(rand_max), 1)
-    if ban_value > rand_max / 2:
-        #('ban is more randMax/2')
-        if random.randrange(1, 100, 1) < 60:
-            #('ban is set to half')
-            ban_value = random.randrange(int(rand_min), int(rand_max / 2), 1)
-
-    if ban_value > rand_max / 3:
-        #('ban is more randMax/3')
-        if random.randrange(1, 100, 1) < 60:
-            #('ban is set to 1/3')
-            ban_value = random.randrange(int(rand_min), int(rand_max / 3), 1)
-
-    message_to_victim = ('Ты выиграл(а) ' + str(ban_value) + "секунд мута!!!")
-    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=datetime.datetime.now() + ban_value)
-    bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
-
-    if datetime.datetime.now().day > start_date.day:
-        winner_value = 0
-        if int(ban_value) > winner_value:
-            winner_value = ban_value;
-            bot.send_message(message.chat.id,text=('Сегодняшний рекорд равен: ' + str(winner_value)))
-            start_date = datetime.datetime.now()
-    elif datetime.datetime.now().day == start_date.day:
-        if int(ban_value) > winner_value:
-            winner_value = ban_value;
-            bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
-
-# Выдаём Read-only за определённые фразы
 @bot.message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
 def set_ro(message):
-    jailbot = bot.get_me()
-    jailbot_id = jailbot.id
-
-    current_user_id = message.from_user.id
-    current_group_id = message.chat.id
-    current_group_admins = get_admin_ids(bot, current_group_id)
 
     if any(regex.findall(message.text) for regex in config.regexes):
-        random_ban_message = lambda: random.choice(config.ban_message)
-        random_ban_admin_message = lambda: random.choice(config.ban_message_admin)
-        if (current_user_id in current_group_admins):
-            bot.send_message(message.chat.id, random_ban_admin_message(), reply_to_message_id=message.message_id)
+        if (message.from_user.id in get_admin_ids(bot, message.chat.id)):
+            #if admin says bad word
+            bot.send_message(message.chat.id, config.random_ban_admin_message(), reply_to_message_id=message.message_id)
         else:
+            #if mortal user says bad word
             user_mute(message)
-            #bot.send_message(message.chat.id, random_ban_message(),reply_to_message_id=message.message_id)
-            #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
-    elif any(regex.match(message.text) for regex in config.attack_commands):
-        if (current_user_id in current_group_admins and message.reply_to_message is not None):
-            victim_id = message.reply_to_message.from_user.id
-            random_ban_message_on_command = lambda: random.choice(config.ban_message_on_command)
-            # bot.send_message(message.chat.id, random_ban_message_on_command(), reply_to_message_id=message.reply_to_message.message_id)
-            user_mute(message, victim_id) #bot.restrict_chat_member(message.chat.id, victim_id, until_date=time.time() + 31)
 
+    elif any(regex.match(message.text) for regex in config.attack_commands):
+        if (message.from_user.id in get_admin_ids(bot, message.chat.id) and message.reply_to_message is not None):
+            bot.send_message(message.chat.id, config.random_ban_message_on_command(), reply_to_message_id=message.reply_to_message.message_id)
+            bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + config.ban_standart)
         else:
             bot.send_message(message.chat.id, 'Нет.', reply_to_message_id=message.message_id)
-            bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
-    elif any(regex.findall(message.text) for regex in config.regexes_botname):
-        messageWithoutBot = re.sub(config.regex_botname, repl='', string=message.text)
-        request = apiai.ApiAI(config.apiai_token).text_request()  # Токен API к Dialogflow
-        request.lang = 'ru'  # На каком языке будет послан запрос
-        request.session_id = 'Jailbot'  # ID Сессии диалога (нужно, чтобы потом учить бота)
-        request.query = messageWithoutBot
-        responseJson = json.loads(request.getresponse().read().decode('utf-8'))
-        response = responseJson['result']['fulfillment']['speech']  # Разбираем JSON и вытаскиваем ответ
-        # Если есть ответ от бота - присылаем юзеру, если нет - бот его не понял
-        if response:
-            bot.send_message(message.chat.id, text=response, reply_to_message_id=message.message_id)
-        else:
-            bot.send_message(message.chat.id, text='Выше моего понимания!', reply_to_message_id=message.message_id)
-    elif message.reply_to_message is not None:
-        if str(message.reply_to_message.from_user.id) == str(jailbot_id):
-            request = apiai.ApiAI(config.apiai_token).text_request()  # Токен API к Dialogflow
-            request.lang = 'ru'  # На каком языке будет послан запрос
-            request.session_id = 'Jailbot'  # ID Сессии диалога (нужно, чтобы потом учить бота)
-            request.query = message.text
-            responseJson = json.loads(request.getresponse().read().decode('utf-8'))
-            response = responseJson['result']['fulfillment']['speech']  # Разбираем JSON и вытаскиваем ответ
-            # Если есть ответ от бота - присылаем юзеру, если нет - бот его не понял
-            if response:
-                bot.send_message(message.chat.id, text=response, reply_to_message_id=message.message_id)
-            else:
-                bot.send_message(message.chat.id, text='Выше моего понимания!', reply_to_message_id=message.message_id)
+            bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + config.ban_standart)
 
+    elif any(regex.match(message.text) for regex in config.attack_commands_super):
+        if (message.from_user.id in get_admin_ids(bot, message.chat.id) and message.reply_to_message is not None):
+            bot.send_message(message.chat.id, "Бейби", reply_to_message_id=message.reply_to_message.message_id)
+            bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, until_date=time.time() + config.ban_super)
+            terminator = open('terminator.jpg', 'rb')
+            bot.send_photo(message.chat.id, terminator)
+        else:
+            bot.send_message(message.chat.id, 'Нет.', reply_to_message_id=message.message_id)
+            bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + config.ban_standart)
+    #bot answer on keyword in chat
+    elif any(regex.findall(message.text) for regex in config.regexes_botname):
+            bot_ai_answer(message, 0)
+
+    #bot answer on reply
+    elif message.reply_to_message is not None:
+        if message.reply_to_message.from_user.id == bot.get_me().id:
+            bot_ai_answer(message, 1)
 
 @bot.edited_message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
-def set_ro_by_command(message):
-    current_user_id = message.from_user.id
-    current_group_id = message.chat.id
-    current_group_admins = get_admin_ids(bot, current_group_id)
-    random_ban_message = lambda: random.choice(config.ban_message)
-    bot.send_message(message.chat.id, "got it", reply_to_message_id=message.message.id)
-    if any(regex.findall(message.text) for regex in config.attack_commands):
-        bot.send_message(message.chat.id, "Check it", reply_to_message_id=message.message.id)
-        if current_user_id in current_group_admins:
-            random_ban_message_on_command = lambda: random.choice(config.ban_message_on_command)
-            bot.send_message(message.chat.id, random_ban_message_on_command(), reply_to_message_id=message.reply_to_message)
+def set_ro_edited(message):
+    if any(regex.findall(message.text) for regex in config.regexes):
+        if message.from_user.id in get_admin_ids(bot, message.chat.id):
+            bot.send_message(message.chat.id, config.random_ban_message_on_command(), reply_to_message_id=message.reply_to_message)
         else:
-            user_mute(message, message.from_user.id)
-            # bot.send_message(message.chat.id, random_ban_message(), reply_to_message_id=message.message_id)
-            # bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + 31)
+            user_mute(message)
 
 
-@server.route('/' + config.token, methods=['POST'])
-def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "!", 200
+#   .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
+#  | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
+#  | |    _______   | || |  _________   | || |      __      | || |  _______     | || |  _________   | || |  _________   | || |  _______     | |
+#  | |   /  ___  |  | || | |  _   _  |  | || |     /  \     | || | |_   __ \    | || | |  _   _  |  | || | |_   ___  |  | || | |_   __ \    | |
+#  | |  |  (__ \_|  | || | |_/ | | \_|  | || |    / /\ \    | || |   | |__) |   | || | |_/ | | \_|  | || |   | |_  \_|  | || |   | |__) |   | |
+#  | |   '.___`-.   | || |     | |      | || |   / ____ \   | || |   |  __ /    | || |     | |      | || |   |  _|  _   | || |   |  __ /    | |
+#  | |  |`\____) |  | || |    _| |_     | || | _/ /    \ \_ | || |  _| |  \ \_  | || |    _| |_     | || |  _| |___/ |  | || |  _| |  \ \_  | |
+#  | |  |_______.'  | || |   |_____|    | || ||____|  |____|| || | |____| |___| | || |   |_____|    | || | |_________|  | || | |____| |___| | |
+#  | |              | || |              | || |              | || |              | || |              | || |              | || |              | |
+#  | '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
+#   '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
 
 
-@server.route("/")
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url='https://jailbot20.herokuapp.com/' + config.token)
-    return "!", 200
+if config.deploy == 1 :
+    @server.route('/' + config.token, methods=['POST'])
+    def getMessage():
+        bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+        return "!", 200
 
+    @server.route("/")
+    def webhook():
+        bot.remove_webhook()
+        bot.set_webhook(url='https://jailbot20.herokuapp.com/' + config.token)
+        return "!", 200
 
-server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
+    server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
+else:
+    bot.polling(none_stop=True, interval=0)
