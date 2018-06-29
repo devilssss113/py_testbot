@@ -2,11 +2,13 @@ import datetime
 import re
 import random
 
-token = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
-#token = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
+bot_version = "2.1 DS"
+
+#token = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
+token = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
 
 apiai_token = "9c9e550ee9194530812ae11fb0a22258"
-deploy = 1
+deploy = 0
 
 GROUP_ID = [
      -1001194512914,
@@ -17,6 +19,7 @@ ban_standart = 60
 ban_super = 60*60*24
 rand_min = 31
 rand_max = 600
+start_date = datetime.datetime.now()
 
 random_ban_message_on_command = lambda: random.choice(ban_message_on_command)
 random_ban_admin_message = lambda: random.choice(ban_message_admin)

@@ -15,7 +15,8 @@ telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
-start_date = datetime.datetime.now()
+config.start_date = datetime.datetime.now()
+
 
 
 def get_admin_ids(bot, chat_id):
@@ -27,7 +28,7 @@ def user_mute(message):
 
     random.seed(version=2)
     winner_value = 0
-    global start_date
+
 
     ban_value = random.randrange(int(config.rand_min), int(config.rand_max), 1)
     if ban_value > config.rand_max / 2:
@@ -42,13 +43,13 @@ def user_mute(message):
     bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
     bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
 
-    if datetime.datetime.now().day > start_date.day:
+    if datetime.datetime.now().day > config.start_date.day:
         winner_value = 0
         if int(ban_value) > winner_value:
             winner_value = ban_value
             bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
-            start_date = datetime.datetime.now()
-    elif datetime.datetime.now().day == start_date.day:
+            config.start_date = datetime.datetime.now()
+    elif datetime.datetime.now().day == config.start_date.day:
         if int(ban_value) > winner_value:
             winner_value = ban_value;
             bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
@@ -90,6 +91,7 @@ def bot_ai_answer(message, reply):
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
     bot.send_message(message.chat.id, 'Я здесь')
+    bot.send_message(message.chat.id, config.bot_version)
     pass
 
 
