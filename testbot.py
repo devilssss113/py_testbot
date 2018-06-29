@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import config
+import Privat24
+import weather
 import time
 import random
 import apiai, json
@@ -8,14 +10,27 @@ import logging
 import telebot
 import os
 import datetime
+import platform
 from flask import Flask, request
+
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
 
-bot = telebot.TeleBot(config.token)
-server = Flask(__name__)
 
+global token
+global GROUP_ID
+if platform.uname().system == 'Windows':
+    print("Using LOCAL settings")
+    token = config.token_test
+    GROUP_ID = config.group_id_test
+else:
+    print("Using DEPLOY settings")
+    token = config.token_deploy
+    GROUP_ID = config.group_id_deploy
+
+bot = telebot.TeleBot(token)
+server = Flask(__name__)
 
 
 def get_admin_ids(bot, chat_id):
@@ -159,6 +174,34 @@ def handle_start(message):
     bot.send_message(message.chat.id, 'Я здесь')
     pass
 
+
+@bot.message_handler(commands=['weather'])
+def weather_command(message):
+    icon_url, temp_final = weather.get_weather()
+    print(icon_url)
+    bot.send_message(message.chat.id, text=temp_final)
+    pass
+
+
+@bot.message_handler(commands=['curdata'])
+def handle_exdate(message):
+    if any(regex.findall(message.text) for regex in config.regex_data):
+        m = re.search(r'(1|2|3|)[0-9]\.(0|1|)[0-9]\.20(0|1|2)[0-9]', message.text)
+        if m:
+            data = m.group(0)
+            print(data)
+            bot.send_message(message.chat.id, Privat24.exchange_on_date(data))
+    else:
+        bot.send_message(message.chat.id,'Введи дату')
+    pass
+
+
+@bot.message_handler(commands=['currency'])
+def handle_excur(message):
+    bot.send_message(message.chat.id, Privat24.exchange_current())
+    pass
+
+
 @bot.message_handler(commands=['shodka'])
 def handle_shodka(message):
     if message.from_user.id in get_admin_ids(bot, message.chat.id):
@@ -212,7 +255,7 @@ def handle_welcome(message):
 def handle_bye(message):
     bot.send_message(message.chat.id, text='От нас уходят лишь вперед ногами, ' + message.from_user.first_name + '!')
 
-@bot.message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
+@bot.message_handler(func=lambda message: message.text is not None and message.chat.id in GROUP_ID)
 def set_ro(message):
 
     if any(regex.findall(message.text) for regex in config.regexes):
@@ -256,7 +299,7 @@ def set_ro(message):
         if message.reply_to_message.from_user.id == bot.get_me().id:
             bot_ai_answer(message, 1)
 
-@bot.edited_message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
+@bot.edited_message_handler(func=lambda message: message.text is not None and message.chat.id in GROUP_ID)
 def set_ro_edited(message):
     if any(regex.findall(message.text) for regex in config.regexes):
         if message.from_user.id in get_admin_ids(bot, message.chat.id):
@@ -280,7 +323,7 @@ def set_ro_edited(message):
 
 
 if config.deploy == 1 :
-    @server.route('/' + config.token, methods=['POST'])
+    @server.route('/' + token, methods=['POST'])
     def getMessage():
         bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
         return "!", 200
@@ -288,7 +331,7 @@ if config.deploy == 1 :
     @server.route("/")
     def webhook():
         bot.remove_webhook()
-        bot.set_webhook(url='https://jailbot20.herokuapp.com/' + config.token)
+        bot.set_webhook(url='https://jailbot20.herokuapp.com/' + token)
         return "!", 200
 
     server.run(host="0.0.0.0", port=os.environ.get('PORT', 5000))
