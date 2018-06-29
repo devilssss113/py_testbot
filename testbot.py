@@ -15,7 +15,9 @@ telebot.logger.setLevel(logging.INFO)
 
 bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
-config.start_date = datetime.datetime.now()
+
+
+deploy = 0
 
 
 
@@ -23,12 +25,8 @@ def get_admin_ids(bot, chat_id):
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
 
 
-
 def user_mute(message):
-
     random.seed(version=2)
-    winner_value = 0
-
 
     ban_value = random.randrange(int(config.rand_min), int(config.rand_max), 1)
     if ban_value > config.rand_max / 2:
@@ -40,19 +38,37 @@ def user_mute(message):
             ban_value = random.randrange(int(config.rand_min), int(config.rand_max / 3), 1)
 
     message_to_victim = (config.random_ban_message() + 'Ты выиграл(а) ' + str(ban_value) + " секунд мута!")
-    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
+    #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
     bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
 
-    if datetime.datetime.now().day > config.start_date.day:
-        winner_value = 0
-        if int(ban_value) > winner_value:
-            winner_value = ban_value
-            bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
-            config.start_date = datetime.datetime.now()
-    elif datetime.datetime.now().day == config.start_date.day:
-        if int(ban_value) > winner_value:
-            winner_value = ban_value;
-            bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(winner_value)))
+    if message.from_user.username is None:
+        pos_winner = message.from_user.first_name
+    else:
+        pos_winner = message.from_user.username
+
+    if datetime.datetime.now().day > config.start_date[0].day:
+        config.start_ban_value.clear()
+        config.start_ban_value.append(0)
+        config.winner.clear()
+        config.winner.append(0)
+        config.start_ban_value.append(0)
+        config.start_ban_value.clear()
+        config.start_ban_value.append(0)
+        config.start_date.clear()
+        config.start_date.append(datetime.datetime.now())
+        if int(ban_value) > config.start_ban_value[0]:
+            config.winner.clear()
+            config.winner.append(pos_winner)
+            config.start_ban_value.clear()
+            config.start_ban_value.append(ban_value)
+    elif datetime.datetime.now().day == config.start_date[0].day:
+        if int(ban_value) > config.start_ban_value[0]:
+            config.winner.clear()
+            config.winner.append(pos_winner)
+            config.start_ban_value.clear()
+            config.start_ban_value.append(ban_value)
+
+    bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) + ". Наш победитель - " + str(config.winner[0])))
 
 
 def bot_ai_answer(message, reply):
@@ -74,6 +90,59 @@ def bot_ai_answer(message, reply):
             bot.send_message(message.chat.id, text='Не хочу говорить об этом', reply_to_message_id=message.message_id)
 
 
+def length_duel_namer(length):
+    if length < 5:
+        length_name = "прыщик"
+    elif 4 < length < 10:
+        length_name = "болтик"
+    elif 9 < length < 15:
+        length_name = "писюрик"
+    elif 14 < length < 20:
+        length_name = "агрегат"
+    elif 19 < length < 25:
+        length_name = "покоритель сердец"
+    elif 24 < length < 31:
+        length_name = "черный властелин"
+    elif length > 31:
+        length_name = "разрыватель"
+    return length_name
+
+
+def length_duel(m):
+    opp1 = m.from_user
+    opp2 = m.reply_to_message.from_user
+    bot_opp = bot.get_me().id
+
+    if opp1.username is None:
+        opp1_name = opp1.first_name
+    else:
+        opp1_name = opp1.username
+
+    if opp2.username is None:
+        opp2_name = opp2.first_name
+    else:
+        opp2_name = opp2.username
+
+    opp1length = random.randrange(1, 30, 1)
+
+    if opp2.id == bot_opp:
+        opp2length = random.randrange(29, 200, 1)
+    elif opp2.username == "Devilssss113":
+        opp2length = random.randrange(29, 40, 1)
+    elif opp2.username == "Varvara123456":
+        opp2length = random.randrange(29, 40, 1)
+    else:
+        opp2length = random.randrange(1, 30, 1)
+
+    bot.send_message(m.chat.id, text="Объявлена дуэль между " + str(opp1_name) + " и " + str(opp2_name))
+    bot.send_message(m.chat.id, text="У " + opp1_name + " " + str(opp1length) + " сантиметровый  " + length_duel_namer(opp1length) +
+                                     ". У " + opp2_name + " " + str(opp2length) + " саниметровый " + length_duel_namer(opp2length) +
+                                     ". Выводы делайте сами")
+
+
+
+
+
 #   .----------------.  .----------------.  .-----------------. .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
 #  | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
 #  | |  ____  ____  | || |      __      | || | ____  _____  | || |  ________    | || |   _____      | || |  _________   | || |  _______     | || |    _______   | |
@@ -88,24 +157,56 @@ def bot_ai_answer(message, reply):
 
 
 # Обработчик команд '/start' и '/help'.
-@bot.message_handler(commands=['start', 'help'])
-def handle_start_help(message):
+@bot.message_handler(commands=['start'])
+def handle_start(message):
     bot.send_message(message.chat.id, 'Я здесь')
-    bot.send_message(message.chat.id, config.bot_version)
+    pass
+
+@bot.message_handler(commands=['shodka'])
+def handle_shodka(message):
+    if message.from_user.id in get_admin_ids(bot, message.chat.id):
+        if message.reply_to_message.text != "0":
+            config.shodka_message.clear()
+            config.shodka_message.append(message.reply_to_message)
+            bot.send_message(message.chat.id, message.text, reply_to_message_id=message.reply_to_message)
+            bot.pin_chat_message(message.chat.id, message.reply_to_message.message_id, disable_notification=False)
+        else:
+            config.shodka_message.clear()
+            bot.send_message(message.chat.id, "Информация о сходке аннулирована", reply_to_message_id=message.reply_to_message)
+    else:
+        if config.shodka_message[0] != 0:
+            bot.send_message(message.chat.id, "Вот", reply_to_message_id=config.shodka_message[0].message_id)
+        else:
+            bot.send_message(message.chat.id, "Чёт я хз")
+    pass
+
+
+@bot.message_handler(commands=['duel'])
+def handle_duel(message):
+    if message.reply_to_message is not None:
+        length_duel(message)
+    elif message.reply_to_message is None:
+        bot.send_message(message.chat.id, text="Выбери оппонента. Напиши в ответ своему обидчику слово Дуэль")
+    pass
+
+@bot.message_handler(commands=['help'])
+def handle_help(message):
+    bot.send_message(message.chat.id, 'Версия ' + config.bot_version + '. Бан за мат выдается методом рулетки. Отвечаю лишь на сообщения со словом Бот или'
+                                      ' ответы на мои сообщения.'
+                                      ' Команды бана (Фас, Асталависта) доступны лишь администраторам. Присутвуют дуэли.'
+                                      'Полный список доступных команд писать откровенно лень)')
     pass
 
 
 # Обработчик новых людей в чате.
-@bot.message_handler(func=lambda message: True, content_types=['new_chat_member'])
+@bot.message_handler(func=lambda message: True, content_types=['new_chat_members'])
 def handle_welcome(message):
-    bot.send_message(message.chat.id, text='Приветствую в нашем чате, ' + message.message.from_user.username + '!', reply_to_message_id=message.message_id)
-
+    bot.send_message(message.chat.id, text='Приветствую в нашем чате, ' + message.from_user.first_name + '!')
 
 # Обработчик ушедших людей в чате.
 @bot.message_handler(func=lambda message: True, content_types=['left_chat_member'])
 def handle_bye(message):
-    bot.send_message(message.chat.id, text='Нам будет тебя не хватать, ' + message.message.from_user.username + '!')
-
+    bot.send_message(message.chat.id, text='От нас уходят лишь вперед ногами, ' + message.from_user.first_name + '!')
 
 @bot.message_handler(func=lambda message: message.text is not None and message.chat.id in config.GROUP_ID)
 def set_ro(message):
@@ -135,6 +236,13 @@ def set_ro(message):
         else:
             bot.send_message(message.chat.id, 'Нет.', reply_to_message_id=message.message_id)
             bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + config.ban_standart)
+    #duel invite
+    elif any(regex.findall(message.text) for regex in config.length_duel_invite):
+        if message.reply_to_message is not None:
+            length_duel(message)
+        elif message.reply_to_message is None:
+            bot.send_message(message.chat.id, text="Выбери оппонента. Напиши в ответ своему обидчику слово Дуэль")
+
     #bot answer on keyword in chat
     elif any(regex.findall(message.text) for regex in config.regexes_botname):
             bot_ai_answer(message, 0)
@@ -151,6 +259,7 @@ def set_ro_edited(message):
             bot.send_message(message.chat.id, config.random_ban_message_on_command(), reply_to_message_id=message.reply_to_message)
         else:
             user_mute(message)
+
 
 
 #   .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.

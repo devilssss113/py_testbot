@@ -1,25 +1,32 @@
 import datetime
+from datetime import datetime
 import re
 import random
 
-bot_version = "2.1.01"
+bot_version = "2.1.1"
 
-token = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
-#token = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
+#token = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
+token = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
 
 apiai_token = "9c9e550ee9194530812ae11fb0a22258"
-deploy = 1
+deploy = 0
 
 GROUP_ID = [
-     -1001194512914,
-     -1001223980001
+     # -1001194512914, #Go Guliat
+    -1001223980001, #test
+    #-1001261092760 #music
 ]
 
 ban_standart = 60
 ban_super = 60*60*24
 rand_min = 31
 rand_max = 600
-start_date = datetime.datetime.now()
+start_date = [datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')]
+
+shodka_message = [0]
+
+start_ban_value = [0]
+winner = [0]
 
 random_ban_message_on_command = lambda: random.choice(ban_message_on_command)
 random_ban_admin_message = lambda: random.choice(ban_message_admin)
@@ -51,6 +58,10 @@ attack_commands = [
 
 attack_commands_super = [
     re.compile(r'(^Асталависта| Асталависта)', re.I),
+]
+
+length_duel_invite = [
+    re.compile(r'(^Дуэль| Дуэль|^Дуель| Дуель)', re.I)
 ]
 
 ban_message_on_command = [
