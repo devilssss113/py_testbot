@@ -17,9 +17,6 @@ bot = telebot.TeleBot(config.token)
 server = Flask(__name__)
 
 
-deploy = 1
-
-
 
 def get_admin_ids(bot, chat_id):
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
@@ -195,6 +192,13 @@ def handle_help(message):
                                       ' ответы на мои сообщения.'
                                       ' Команды бана (Фас, Асталависта) доступны лишь администраторам. Присутвуют дуэли.'
                                       'Полный список доступных команд писать откровенно лень)')
+    pass
+
+@bot.message_handler(commands=['winner'])
+def handle_winner(message):
+    bot.send_message(message.chat.id, text=(
+                'Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) + ". Наш победитель - " + str(
+            config.winner[0])))
     pass
 
 
