@@ -3,7 +3,7 @@ from datetime import datetime
 import re
 import random
 
-bot_version = "2.1.1"
+bot_version = "2.2.0"
 deploy = 0
 
 token_deploy = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
