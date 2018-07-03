@@ -1,18 +1,15 @@
 import requests
-import re
+
 
 def exchange_current():
-    res = requests.get("https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3")
-    if not bool(re.match(r"<Response.*", str(res))):
-        print(res)
+    res = requests.get("https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5")
+    if bool(res.status_code == 200):
         data = res.json()
-        print(data)
 
         if str(data[0]['base_ccy']) != 'BTC':
             exchange = str(data[0]['ccy']) + " | " + str(data[0]['buy']) + " | " + str(data[0]['sale']) + '\n' + \
                        str(data[1]['ccy']) + " | " + str(data[1]['buy']) + " | " + str(data[1]['sale']) + '\n' + \
                        str(data[2]['ccy']) + " | " + str(data[2]['buy']) + " | " + str(data[2]['sale'])
-            print(exchange)
 
         else:
             exchange = 'На сегодня нет курсов валют'
@@ -21,13 +18,12 @@ def exchange_current():
         exchange = 'Приват не отвечает'
         return exchange
 
+
 def exchange_on_date (date):
     res = requests.get("https://api.privatbank.ua/p24api/exchange_rates?json",
                      params={'date': date})
-    if not bool(re.match(r"<Response.*", str(res))):
-        print(res)
+    if bool(res.status_code == 200):
         data = res.json()
-        print(data)
 
         if len(data['exchangeRate']) > 0:
             exchange = str(data['exchangeRate'][13]['currency']) + " | " + str(data['exchangeRate'][13]['saleRateNB'])\
@@ -46,4 +42,4 @@ def exchange_on_date (date):
 
 
 print(exchange_current())
-print(exchange_on_date('24.12.2014'))
+print(exchange_on_date('24.12.2018'))
