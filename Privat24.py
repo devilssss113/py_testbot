@@ -2,7 +2,7 @@ import requests
 import re
 
 def exchange_current():
-    res = requests.get("https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5")
+    res = requests.get("https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=3")
     if not bool(re.match(r"<Response.*", str(res))):
         print(res)
         data = res.json()
