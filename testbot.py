@@ -78,8 +78,8 @@ def user_mute_rlt(message):
             config.start_ban_value.append(ban_value)
 
     message_to_victim = (config.random_ban_message() + 'Ты выиграл(а) ' + str(ban_value) + ' секунд мута! ' +
-                         'Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) + ". Наш победитель - " + str(
-                        config.winner[0]))
+                         'Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) + ". Быдло дня - " + str(
+                config.winner[0]))
 
     if config.silent_mode == 0:
         bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + ban_value)
@@ -178,6 +178,7 @@ def length_duel(m):
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     bot.send_message(message.chat.id, 'Я здесь')
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
@@ -186,13 +187,15 @@ def weather_command(message):
     icon_url, temp_final = weather.get_weather()
     print(icon_url)
     bot.send_message(message.chat.id, text=temp_final)
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
 @bot.message_handler(commands=['winner'])
 def winner_command(message):
     bot.send_message(message.chat.id, text='Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) +
-                                           ". Наш победитель - " + str(config.winner[0]))
+                                           ". Быдло дня - " + str(config.winner[0]))
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
@@ -206,12 +209,14 @@ def handle_exdate(message):
             bot.send_message(message.chat.id, Privat24.exchange_on_date(data))
     else:
         bot.send_message(message.chat.id, 'Введи дату')
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
 @bot.message_handler(commands=['currency'])
 def handle_excur(message):
     bot.send_message(message.chat.id, Privat24.exchange_current())
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
@@ -232,6 +237,7 @@ def handle_shodka(message):
             bot.send_message(message.chat.id, "Вот", reply_to_message_id=config.shodka_message[0].message_id)
         else:
             bot.send_message(message.chat.id, "Чёт я хз")
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
@@ -241,6 +247,7 @@ def handle_duel(message):
         length_duel(message)
     elif message.reply_to_message is None:
         bot.send_message(message.chat.id, text="Выбери оппонента. Напиши в ответ своему обидчику слово Дуэль")
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
@@ -251,6 +258,7 @@ def handle_help(message):
                                                       ' ответы на мои сообщения.'
                                                       ' Команды бана (Фас, Асталависта) доступны лишь администраторам. Присутвуют дуэли.'
                                                       'Полный список доступных команд писать откровенно лень)')
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 
@@ -258,7 +266,8 @@ def handle_help(message):
 def handle_winner(message):
     bot.send_message(message.chat.id, text=(
             'Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) + ". Наш победитель - " + str(
-        config.winner[0])))
+            config.winner[0])))
+    bot.delete_message(message.chat.id, message.message_id)
     pass
 
 

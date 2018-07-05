@@ -19,7 +19,7 @@ group_id_test = [
     -1001223980001, #test
 ]
 
-ban_standart = 60
+ban_standart = 60*3
 ban_super = 60*60*24
 rand_min = 31
 rand_max = 600
