@@ -49,9 +49,6 @@ def user_mute(message):
         if random.randrange(1, 100, 1) < 60:
             ban_value = random.randrange(int(config.rand_min), int(config.rand_max / 3), 1)
 
-    message_to_victim = (config.random_ban_message() + 'Ты выиграл(а) ' + str(ban_value) + " секунд мута!")
-    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date= time.time() + ban_value)
-    bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
 
     if message.from_user.username is None:
         pos_winner = message.from_user.first_name
@@ -80,7 +77,11 @@ def user_mute(message):
             config.start_ban_value.clear()
             config.start_ban_value.append(ban_value)
 
-    bot.send_message(message.chat.id, text=('Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) + ". Наш победитель - " + str(config.winner[0])))
+    message_to_victim = (config.random_ban_message() + 'Ты выиграл(а) ' + str(ban_value) + " секунд мута! " +
+                         "Сегодняшний рекорд равен: " + str(config.start_ban_value[0]) + ". Наш победитель - "
+                         + str(config.winner[0]))
+    bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + ban_value)
+    bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
 
 
 def bot_ai_answer(message, reply):

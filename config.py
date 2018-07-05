@@ -23,8 +23,8 @@ group_id_test = [
 
 ban_standart = 60
 ban_super = 60*60*24
-rand_min = 31
-rand_max = 600
+rand_min = 100
+rand_max = 10000
 start_date = [datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')]
 
 shodka_message = [0]
