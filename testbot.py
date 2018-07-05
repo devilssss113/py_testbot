@@ -88,7 +88,7 @@ def user_mute_rlt(message):
     else:
         bot.delete_message(message.chat.id, message.message_id)
         bot_blink_animation(message)
-        #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + ban_value)
+        bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + ban_value)
         bot.send_message(chat_id=message.from_user.id, text=message_to_victim)
 
 
@@ -132,11 +132,11 @@ def length_duel_namer(length):
 
 def bot_blink_animation(message):
     botmes = bot.send_message(message.chat.id, text='😊')
-    sleep(0.75)
+    sleep(1)
     bot.edit_message_text(text='😉', chat_id=message.chat.id, message_id=botmes.message_id)
-    sleep(0.75)
+    sleep(1)
     bot.edit_message_text(text='😊', chat_id=message.chat.id, message_id=botmes.message_id)
-    sleep(0.75)
+    sleep(1)
     bot.delete_message(chat_id=message.chat.id, message_id=botmes.message_id)
 
 def length_duel(m):
