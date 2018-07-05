@@ -12,6 +12,7 @@ import os
 import datetime
 import platform
 from flask import Flask, request
+from time import sleep
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.INFO)
@@ -86,8 +87,10 @@ def user_mute_rlt(message):
         bot.send_message(message.chat.id, message_to_victim, reply_to_message_id=message.message_id)
     else:
         bot.delete_message(message.chat.id, message.message_id)
-        bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + ban_value)
+        bot_blink_animation(message)
+        #bot.restrict_chat_member(message.chat.id, message.from_user.id, until_date=time.time() + ban_value)
         bot.send_message(chat_id=message.from_user.id, text=message_to_victim)
+
 
 
 def bot_ai_answer(message, reply):
@@ -126,6 +129,15 @@ def length_duel_namer(length):
         length_name = "разрыватель"
     return length_name
 
+
+def bot_blink_animation(message):
+    botmes = bot.send_message(message.chat.id, text='😊')
+    sleep(0.75)
+    bot.edit_message_text(text='😉', chat_id=message.chat.id, message_id=botmes.message_id)
+    sleep(0.75)
+    bot.edit_message_text(text='😊', chat_id=message.chat.id, message_id=botmes.message_id)
+    sleep(0.75)
+    bot.delete_message(chat_id=message.chat.id, message_id=botmes.message_id)
 
 def length_duel(m):
     opp1 = m.from_user
