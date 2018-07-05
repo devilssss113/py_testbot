@@ -39,7 +39,3 @@ def exchange_on_date (date):
     else:
         exchange = 'Приват не отвечает'
         return exchange
-
-
-print(exchange_current())
-print(exchange_on_date('24.12.2018'))

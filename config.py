@@ -4,12 +4,10 @@ import re
 import random
 
 bot_version = "2.2.0"
-deploy = 1
 
 token_deploy = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
 token_test = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
 apiai_token = "9c9e550ee9194530812ae11fb0a22258"
-
 
 
 group_id_deploy = [
@@ -26,6 +24,7 @@ ban_super = 60*60*24
 rand_min = 31
 rand_max = 600
 start_date = [datetime.strptime('Jun 1 2005  1:33PM', '%b %d %Y %I:%M%p')]
+silent_mode = 1
 
 shodka_message = [0]
 start_ban_value = [0]
