@@ -153,8 +153,8 @@ def length_duel(m):
     else:
         opp2length = random.randrange(1, 30, 1)
 
-    bot.send_message(m.chat.id, text="Объявлена дуэль между " + str(opp1_name) + " и " + str(opp2_name))
-    bot.send_message(m.chat.id, text="У " + opp1_name + " " + str(opp1length) + " сантиметровый  " + length_duel_namer(
+    bot.send_message(m.chat.id, text="Объявлена дуэль между " + str(opp1_name) + " и " + str(opp2_name) + ". У "
+                                     + opp1_name + " " + str(opp1length) + " сантиметровый  " + length_duel_namer(
         opp1length) +
                                      ". У " + opp2_name + " " + str(opp2length) + " саниметровый " + length_duel_namer(
         opp2length) +
@@ -186,6 +186,13 @@ def weather_command(message):
     icon_url, temp_final = weather.get_weather()
     print(icon_url)
     bot.send_message(message.chat.id, text=temp_final)
+    pass
+
+
+@bot.message_handler(commands=['winner'])
+def winner_command(message):
+    bot.send_message(message.chat.id, text='Сегодняшний рекорд равен: ' + str(config.start_ban_value[0]) +
+                                           ". Наш победитель - " + str(config.winner[0]))
     pass
 
 
