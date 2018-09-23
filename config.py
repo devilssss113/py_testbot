@@ -1,9 +1,8 @@
-import datetime
 from datetime import datetime
 import re
 import random
 
-bot_version = "2.2.0"
+bot_version = "2.2.1"
 
 token_deploy = "528720694:AAH1z9G0kGn3XhArUCbJPzDgLohw08bWCo8" #jailbot20
 token_test = "568670760:AAFnMV3G0ipq7TnWhezxTLzpT49N5z6iHXM" #jaibot M
@@ -12,7 +11,7 @@ apiai_token = "9c9e550ee9194530812ae11fb0a22258"
 
 group_id_deploy = [
     -1001194512914, #Go Guliat
-    -1001261092760 #music
+    -1001265729594, #xpyct
 ]
 
 group_id_test = [
